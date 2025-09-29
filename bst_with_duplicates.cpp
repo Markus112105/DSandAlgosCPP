@@ -11,6 +11,8 @@ struct Node {
     Node* left;
     Node* right;
 
+    // Each node stores how many times a key appears, so duplicate insertions simply bump
+    // the counter while preserving the binary-search-tree layout.
     explicit Node(int k)
         : key(k), count(1), left(nullptr), right(nullptr) {}
 };
@@ -32,10 +34,12 @@ public:
     }
 
     void eraseOne(int key) {
+        // Removing a single instance decrements the counter until the last copy disappears.
         root = eraseRecursive(root, key, false);
     }
 
     void eraseAll(int key) {
+        // Removing all instances installs the same structural changes as ordinary BST deletion.
         root = eraseRecursive(root, key, true);
     }
 
@@ -49,6 +53,7 @@ public:
             return;
         }
         std::queue<Node*> q;
+        // BFS shows each node once along with its multiplicity annotation.
         q.push(root);
         while (!q.empty()) {
             Node* current = q.front();
@@ -69,6 +74,7 @@ private:
 
     static Node* insertRecursive(Node* node, int key) {
         if (!node) {
+            // Create a new node when the path reaches an empty branch.
             return new Node(key);
         }
         if (key < node->key) {
@@ -76,6 +82,7 @@ private:
         } else if (key > node->key) {
             node->right = insertRecursive(node->right, key);
         } else {
+            // Duplicates simply increase the occurrence counter instead of branching further.
             ++node->count;
         }
         return node;
@@ -86,15 +93,18 @@ private:
             return false;
         }
         if (key < node->key) {
+            // Continue probing down the left subtree where smaller keys live.
             return containsRecursive(node->left, key);
         }
         if (key > node->key) {
+            // Continue probing down the right subtree where larger keys live.
             return containsRecursive(node->right, key);
         }
         return true;
     }
 
     static Node* findMin(Node* node) {
+        // Walking left until nullptr yields the inorder successor anchor.
         while (node && node->left) {
             node = node->left;
         }
@@ -111,6 +121,7 @@ private:
             node->right = eraseRecursive(node->right, key, removeAll);
         } else {
             if (!removeAll && node->count > 1) {
+                // Only one copy requested: keep the node but reduce its multiplicity.
                 --node->count;
                 return node;
             }
@@ -128,6 +139,7 @@ private:
             Node* successor = findMin(node->right);
             node->key = successor->key;
             node->count = successor->count;
+            // All successor occurrences were lifted into this node; delete them from the right side.
             successor->count = 1;
             node->right = eraseRecursive(node->right, successor->key, true);
         }
@@ -138,6 +150,7 @@ private:
         if (!node) {
             return;
         }
+        // In-order traversal emits the multiset in sorted order, repeating values by their count.
         printInOrderRecursive(node->left);
         for (int i = 0; i < node->count; ++i) {
             std::cout << node->key << ' ';
@@ -149,6 +162,7 @@ private:
         if (!node) {
             return;
         }
+        // Recursively free subtrees so the dynamic allocations do not leak.
         destroy(node->left);
         destroy(node->right);
         delete node;
@@ -157,6 +171,7 @@ private:
 
 int main() {
     MultisetBST multisetTree;
+    // Insert values intentionally repeating 5 and 10 to exercise the per-node frequency counter.
     multisetTree.insert(10);
     multisetTree.insert(5);
     multisetTree.insert(15);

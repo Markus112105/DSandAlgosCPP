@@ -10,6 +10,8 @@ struct Node {
     Node* left;
     Node* right;
 
+    // Each node stores one key and links to child subtrees that contain strictly
+    // smaller keys on the left and strictly larger keys on the right.
     explicit Node(int k) : key(k), left(nullptr), right(nullptr) {}
 };
 
@@ -31,6 +33,7 @@ public:
     }
 
     void remove(int key) {
+        // Removal rewires the tree locally while keeping the BST ordering invariant intact.
         root = removeRecursive(root, key);
     }
 
@@ -44,6 +47,7 @@ public:
             return;
         }
         std::queue<Node*> q;
+        // A breadth-first traversal highlights the tree's shape level by level.
         q.push(root);
         while (!q.empty()) {
             Node* current = q.front();
@@ -64,6 +68,7 @@ private:
 
     static Node* insertRecursive(Node* node, int key) {
         if (!node) {
+            // We found a null spot where the new key belongs.
             return new Node(key);
         }
         if (key < node->key) {
@@ -81,15 +86,18 @@ private:
             return false;
         }
         if (key < node->key) {
+            // Search recursively down the left branch because all values there are smaller.
             return containsRecursive(node->left, key);
         }
         if (key > node->key) {
+            // Search recursively down the right branch because all values there are larger.
             return containsRecursive(node->right, key);
         }
         return true;
     }
 
     static Node* findMin(Node* node) {
+        // The left-most descendant always carries the smallest key in the current subtree.
         while (node && node->left) {
             node = node->left;
         }
@@ -105,6 +113,7 @@ private:
         } else if (key > node->key) {
             node->right = removeRecursive(node->right, key);
         } else {
+            // Replacement cases depend on how many child subtrees the node currently exposes.
             if (!node->left) {
                 Node* rightChild = node->right;
                 delete node;
@@ -118,6 +127,7 @@ private:
             // Node with two children: swap with inorder successor (smallest in right subtree).
             Node* successor = findMin(node->right);
             node->key = successor->key;
+            // Remove the duplicate that now lives in the right subtree.
             node->right = removeRecursive(node->right, successor->key);
         }
         return node;
@@ -127,6 +137,7 @@ private:
         if (!node) {
             return;
         }
+        // Left subtree -> node -> right subtree produces sorted output for a BST.
         printInOrderRecursive(node->left);
         std::cout << node->key << ' ';
         printInOrderRecursive(node->right);
@@ -136,6 +147,7 @@ private:
         if (!node) {
             return;
         }
+        // Post-order deletion ensures children are freed before their parent.
         destroy(node->left);
         destroy(node->right);
         delete node;
@@ -144,6 +156,7 @@ private:
 
 int main() {
     BinarySearchTree tree;
+    // Insert a handful of keys; BST insert positions them so in-order traversal prints sorted order.
     tree.insert(50);
     tree.insert(30);
     tree.insert(70);

@@ -13,12 +13,15 @@
 class Graph {
 public:
     void addEdge(int from, int to) {
+        // Each adjacency entry stores neighbors in a vector so we can iterate quickly.
         adjacency[from].push_back(to);
         adjacency[to].push_back(from); // Undirected graph for illustration.
     }
 
     void depthFirstSearch(int start) const {
+        // The visited map tracks which vertices have already been processed to avoid cycles.
         std::unordered_map<int, bool> visited;
+        // Using an explicit stack replicates the call stack of a recursive DFS but keeps control iterative.
         std::stack<int> stack;
         stack.push(start);
 
@@ -39,6 +42,7 @@ public:
                 continue;
             }
             const auto& neighbors = it->second;
+            // Push neighbors in reverse to preserve intuitive left-to-right visiting order.
             for (auto rit = neighbors.rbegin(); rit != neighbors.rend(); ++rit) {
                 if (!visited[*rit]) {
                     stack.push(*rit);
@@ -49,6 +53,7 @@ public:
     }
 
     void breadthFirstSearch(int start) const {
+        // BFS leverages a queue so vertices are processed in the order they are discovered.
         std::unordered_map<int, bool> visited;
         std::queue<int> queue;
         queue.push(start);
@@ -66,6 +71,7 @@ public:
                 continue;
             }
             const auto& neighbors = it->second;
+            // Newly discovered vertices are enqueued, ensuring their breadth-first distance ordering.
             for (int neighbor : neighbors) {
                 if (!visited[neighbor]) {
                     visited[neighbor] = true;
@@ -77,11 +83,13 @@ public:
     }
 
 private:
+    // The adjacency list maps each vertex to a collection of immediate neighbors.
     std::unordered_map<int, std::vector<int>> adjacency;
 };
 
 int main() {
     Graph graph;
+    // Build a small binary-like adjacency structure to illustrate how DFS and BFS diverge.
     graph.addEdge(1, 2);
     graph.addEdge(1, 3);
     graph.addEdge(2, 4);

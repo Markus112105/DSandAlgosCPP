@@ -13,10 +13,12 @@ public:
     }
 
     void pushFront(int value) {
+        // Prepend by wiring the new node to the existing head and updating head pointer.
         Node* node = new Node(value);
         node->next = head;
         head = node;
         if (!tail) {
+            // When inserting into an empty list, head and tail both reference the new node.
             tail = node;
         }
         ++length;
@@ -27,6 +29,7 @@ public:
         if (!head) {
             head = tail = node;
         } else {
+            // Append by linking the prior tail to the new node and sliding the tail pointer forward.
             tail->next = node;
             tail = node;
         }
@@ -35,6 +38,7 @@ public:
 
     bool insertAfter(int target, int value) {
         Node* current = head;
+        // Linear scan locates the first node with the requested target value.
         while (current && current->value != target) {
             current = current->next;
         }
@@ -45,6 +49,7 @@ public:
         node->next = current->next;
         current->next = node;
         if (current == tail) {
+            // Inserting after the tail requires updating tail so future appends stay O(1).
             tail = node;
         }
         ++length;
@@ -54,6 +59,7 @@ public:
     bool remove(int value) {
         Node* previous = nullptr;
         Node* current = head;
+        // Find the first node matching the requested value while retaining the predecessor pointer.
         while (current && current->value != value) {
             previous = current;
             current = current->next;
@@ -64,14 +70,17 @@ public:
         if (previous) {
             previous->next = current->next;
         } else {
+            // Deleting the head shifts the head pointer forward one node.
             head = current->next;
         }
         if (current == tail) {
+            // Removing the tail requires backing the tail pointer up to the previous node.
             tail = previous;
         }
         delete current;
         --length;
         if (length == 0) {
+            // Keep tail consistent when the list becomes empty.
             tail = nullptr;
         }
         return true;
@@ -79,6 +88,7 @@ public:
 
     bool contains(int value) const {
         Node* current = head;
+        // Standard pointer walk: return true on the first match, false if we fall off the list.
         while (current) {
             if (current->value == value) {
                 return true;
@@ -100,6 +110,7 @@ public:
         Node* current = head;
         while (current) {
             Node* next = current->next;
+            // Delete nodes in sequence to release memory allocated via new.
             delete current;
             current = next;
         }
@@ -123,6 +134,7 @@ public:
 
 private:
     struct Node {
+        // Every node holds one integer payload and a pointer to the next node in the chain.
         explicit Node(int v) : value(v), next(nullptr) {}
         int value;
         Node* next;
@@ -140,6 +152,7 @@ int main() {
     list.pushBack(20);
     list.pushFront(5);
 
+    // Each print displays the linkage order so we can visualize how operations reshape the list.
     std::cout << "After pushFront/pushBack: ";
     list.print(std::cout);
     std::cout << " (size = " << list.size() << ")\n";
@@ -165,4 +178,3 @@ int main() {
 
     return 0;
 }
-

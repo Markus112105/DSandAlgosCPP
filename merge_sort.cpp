@@ -7,11 +7,14 @@
 // smallest remaining element from either half, yielding O(n log n) time with stable behavior.
 
 void merge(std::vector<int>& values, std::vector<int>& buffer, int left, int mid, int right) {
+    // Indices i and j walk the left and right sorted halves respectively, while k tracks the
+    // destination slot in the temporary buffer.
     int i = left;
     int j = mid + 1;
     int k = left;
 
     while (i <= mid && j <= right) {
+        // Pick the smaller head element to maintain the merged run in sorted order.
         if (values[i] <= values[j]) {
             buffer[k++] = values[i++];
         } else {
@@ -19,6 +22,7 @@ void merge(std::vector<int>& values, std::vector<int>& buffer, int left, int mid
         }
     }
 
+    // Copy any leftovers from the left half; the right half will already be in place if it has extras.
     while (i <= mid) {
         buffer[k++] = values[i++];
     }
@@ -27,6 +31,7 @@ void merge(std::vector<int>& values, std::vector<int>& buffer, int left, int mid
         buffer[k++] = values[j++];
     }
 
+    // Materialize the merged segment back into the original array so parent recursions see sorted data.
     for (int idx = left; idx <= right; ++idx) {
         values[idx] = buffer[idx];
     }
@@ -36,6 +41,7 @@ void mergeSortRecursive(std::vector<int>& values, std::vector<int>& buffer, int 
     if (left >= right) {
         return;
     }
+    // Split the interval in half; recursion sorts each side before the merge step rebuilds order.
     int mid = left + (right - left) / 2;
     mergeSortRecursive(values, buffer, left, mid);
     mergeSortRecursive(values, buffer, mid + 1, right);
@@ -46,6 +52,7 @@ void mergeSort(std::vector<int>& values) {
     if (values.empty()) {
         return;
     }
+    // A single reusable buffer avoids repeated allocations while giving merge() scratch space.
     std::vector<int> buffer(values.size());
     mergeSortRecursive(values, buffer, 0, static_cast<int>(values.size()) - 1);
 }
@@ -59,6 +66,7 @@ int main() {
     }
     std::cout << "\n";
 
+    // Kick off the divide-and-conquer pipeline; mergeSort mutates the vector in place.
     mergeSort(data);
 
     std::cout << "After merge sort: ";

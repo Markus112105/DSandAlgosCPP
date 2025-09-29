@@ -12,10 +12,12 @@ public:
         if (capacity == 0) {
             capacity = 8;
         }
+        // The underlying array acts as contiguous storage for the LIFO container.
         data = new int[capacity];
     }
 
     ~Stack() {
+        // Destructor cleans up the heap allocation to prevent leaks.
         delete[] data;
     }
 
@@ -24,8 +26,10 @@ public:
 
     void push(int value) {
         if (topIndex == capacity) {
+            // When storage is full, double the capacity so the amortized cost stays constant.
             grow();
         }
+        // Place the new value at the current top and advance the top marker.
         data[topIndex++] = value;
     }
 
@@ -33,6 +37,7 @@ public:
         if (empty()) {
             throw std::out_of_range("Cannot pop from an empty stack");
         }
+        // Decrement first so topIndex always points to the next open slot.
         return data[--topIndex];
     }
 
@@ -40,6 +45,7 @@ public:
         if (empty()) {
             throw std::out_of_range("Cannot peek an empty stack");
         }
+        // topIndex - 1 is the last pushed element because topIndex counts elements.
         return data[topIndex - 1];
     }
 
@@ -56,6 +62,7 @@ private:
         std::size_t newCapacity = capacity * 2;
         int* newData = new int[newCapacity];
         for (std::size_t i = 0; i < capacity; ++i) {
+            // Copy existing elements to the new buffer; order must remain unchanged for stack semantics.
             newData[i] = data[i];
         }
         delete[] data;
@@ -64,6 +71,7 @@ private:
     }
 
     int* data = nullptr;
+    // capacity tracks the size of the allocated array, topIndex counts active elements.
     std::size_t capacity = 0;
     std::size_t topIndex = 0;
 };
@@ -72,6 +80,7 @@ int main() {
     Stack stack;
 
     for (int value : {3, 7, 11, 15}) {
+        // Sequential pushes exercise automatic expansion once the default capacity is exceeded.
         stack.push(value);
     }
 
@@ -79,6 +88,7 @@ int main() {
     std::cout << "Top element is: " << stack.peek() << "\n";
 
     while (!stack.empty()) {
+        // Pop until empty to prove the container shrinks logically even though capacity stays high.
         std::cout << "Popped " << stack.pop() << ", size now " << stack.size() << "\n";
     }
 

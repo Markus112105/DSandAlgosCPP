@@ -10,6 +10,7 @@
 class MinMaxHeap {
 public:
     void insert(int value) {
+        // Append at the end to satisfy the array-based complete tree layout, then repair ordering.
         data.push_back(value);
         bubbleUp(data.size() - 1);
     }
@@ -43,6 +44,7 @@ public:
         data[0] = data.back();
         data.pop_back();
         if (!data.empty()) {
+            // After moving the last element to the root, push it downward to restore heap invariants.
             trickleDown(0);
         }
         return minValue;
@@ -65,6 +67,7 @@ public:
         data[maxIndex] = data.back();
         data.pop_back();
         if (maxIndex < data.size()) {
+            // Trickle from the original child position because we replaced that slot with the last element.
             trickleDown(maxIndex);
         }
         return maxValue;
@@ -75,6 +78,7 @@ public:
     }
 
 private:
+    // Array-backed complete binary tree where indices encode parent/child relationships.
     std::vector<int> data;
 
     static size_t parent(size_t index) {
@@ -86,6 +90,7 @@ private:
     }
 
     bool isMinLevel(size_t index) const {
+        // Compute the depth of the node; even depths obey min-heap ordering, odd depths obey max ordering.
         size_t depth = 0;
         while (index > 0) {
             index = parent(index);
@@ -103,16 +108,20 @@ private:
         size_t p = parent(index);
         if (isMinLevel(index)) {
             if (data[index] > data[p]) {
+                // Value is too large for a min level, so swap with parent and enforce max-level rules above.
                 std::swap(data[index], data[p]);
                 bubbleUpMax(p);
             } else {
+                // Value respects the min-level constraint; move up through grandparent chain if needed.
                 bubbleUpMin(index);
             }
         } else {
             if (data[index] < data[p]) {
+                // Value is too small for a max level; swap and propagate along the min-level ancestors.
                 std::swap(data[index], data[p]);
                 bubbleUpMin(p);
             } else {
+                // Otherwise climb the max-level chain to position larger values nearer the top of that level.
                 bubbleUpMax(index);
             }
         }
@@ -122,6 +131,7 @@ private:
         while (index >= 3) {
             size_t gp = grandparent(index);
             if (data[index] < data[gp]) {
+                // Grandparent lives on the same min layer, so swap to move the small value upward.
                 std::swap(data[index], data[gp]);
                 index = gp;
             } else {
@@ -134,6 +144,7 @@ private:
         while (index >= 3) {
             size_t gp = grandparent(index);
             if (data[index] > data[gp]) {
+                // Promote larger values up the max layer by leapfrogging over the parent.
                 std::swap(data[index], data[gp]);
                 index = gp;
             } else {
@@ -162,6 +173,7 @@ private:
                     std::swap(data[m], data[index]);
                     size_t parentIdx = parent(m);
                     if (data[m] > data[parentIdx]) {
+                        // After a grandchild swap, ensure the parent still dominates as a max-level node.
                         std::swap(data[m], data[parentIdx]);
                     }
                     index = m;
@@ -188,6 +200,7 @@ private:
                     std::swap(data[m], data[index]);
                     size_t parentIdx = parent(m);
                     if (data[m] < data[parentIdx]) {
+                        // After bubbling up a larger grandchild, fix any inversion with its direct parent.
                         std::swap(data[m], data[parentIdx]);
                     }
                     index = m;
@@ -216,6 +229,7 @@ private:
             return false;
         }
         size_t p = parent(descendant);
+        // A node is a grandchild if its parent is one of the direct children of the starting index.
         return p == childStart || p == childEnd;
     }
 
@@ -228,6 +242,7 @@ private:
         size_t lastDescendant = std::min(data.size() - 1, 2 * firstChild + 2);
         for (size_t i = firstChild; i <= lastDescendant; ++i) {
             if (data[i] < data[minIdx]) {
+                // Examine children and grandchildren to find the smallest candidate under this node.
                 minIdx = i;
             }
         }
@@ -243,6 +258,7 @@ private:
         size_t lastDescendant = std::min(data.size() - 1, 2 * firstChild + 2);
         for (size_t i = firstChild; i <= lastDescendant; ++i) {
             if (data[i] > data[maxIdx]) {
+                // Symmetric to minDescendant: pick the largest among children and grandchildren.
                 maxIdx = i;
             }
         }
@@ -259,6 +275,7 @@ int main() {
     heap.insert(17);
     heap.insert(22);
 
+    // The demonstrations exercise both ends to underscore the double-ended priority queue behavior.
     std::cout << "Min: " << heap.getMin() << "\n";
     std::cout << "Max: " << heap.getMax() << "\n";
 
